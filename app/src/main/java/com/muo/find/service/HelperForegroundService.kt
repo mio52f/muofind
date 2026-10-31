@@ -48,8 +48,7 @@ class HelperForegroundService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("شبكة MUO Find نشطة")
             .setContentText("جهازك يشارك حالياً في مساعدة الشبكة بشكل مشفر وآمن")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setSmallIcon(R.drawable.ic_launcher)
             .setOngoing(true)
             .build()
     }
