@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">MUO Find</string>
+    <string name="dashboard_title">شبكة العثور الموزعة</string>
+    <string name="dashboard_subtitle">حماية مشفرة ومشاركة اختيارية آمنة</string>
+
+    <string name="nav_my_devices">أجهزتي</string>
+    <string name="nav_my_devices_desc">إدارة أجهزتك ومتابعة حالتها الحالية</string>
+
+    <string name="nav_find_phone">العثور على هاتفي</string>
+    <string name="nav_find_phone_desc">تفعيل بث وضع المفقود وتوليد المعرفات المتغيرة EID</string>
+
+    <string name="nav_help_others">مساعدة الآخرين</string>
+    <string name="nav_help_others_desc">المشاركة التضامنية لاكتشاف الأجهزة المفقودة بالخلفية</string>
+
+    <string name="nav_lost_devices">الأجهزة المفقودة</string>
+    <string name="nav_lost_devices_desc">عرض الأجهزة المشفرة المكتشفة في نطاقك</string>
+
+    <string name="nav_logs">سجل عمليات العثور</string>
+    <string name="nav_logs_desc">سجل التقارير المشفرة ونقاط الاكتشاف</string>
+
+    <string name="nav_settings">الإعدادات والخصوصية</string>
+    <string name="nav_settings_desc">مفاتيح التشفير والتحكم الكامل في مشاركة البيانات</string>
+
+    <string name="btn_grant_permissions">تفعيل الصلاحيات المطلوبة</string>
+    <string name="status_ready">النظام جاهز ومُؤمّن بالكامل</string>
+    <string name="status_permission_missing">يلزم تفعيل إذونات BLE والموقع للعمل</string>
+</resources>
