@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity(), BleManager.Listener {
 
         findViewById<Button>(R.id.btnOpenBluetoothSettings).setOnClickListener {
             try {
-                startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
             } catch (e: Exception) {
                 toast("تعذر فتح إعدادات البلوتوث")
             }
