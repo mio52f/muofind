@@ -1,9 +1,14 @@
 package com.muo.find.ui
 
 import android.Manifest
+import android.bluetooth.BluetoothManager
+import android.content.ComponentName
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.provider.Settings.Secure
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -13,6 +18,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.muo.find.R
 import com.muo.find.ble.BleManager
+import com.muo.find.service.MuoAccessibilityService
 
 class MainActivity : AppCompatActivity(), BleManager.Listener {
 
@@ -22,7 +28,12 @@ class MainActivity : AppCompatActivity(), BleManager.Listener {
 
     private lateinit var status: TextView
     private lateinit var permissionsButton: Button
+    private lateinit var accessibilityStatus: TextView
+    private lateinit var bluetoothState: TextView
+    private lateinit var tapTarget: Button
     private lateinit var ble: BleManager
+
+    private var tapCount = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,8 +45,29 @@ class MainActivity : AppCompatActivity(), BleManager.Listener {
         status = findViewById(R.id.txtStatusTitle)
         permissionsButton = findViewById(R.id.btnPermissions)
 
+        accessibilityStatus = findViewById(R.id.txtAccessibilityStatus)
+        bluetoothState = findViewById(R.id.txtBluetoothState)
+        tapTarget = findViewById(R.id.btnTapTarget)
+
         permissionsButton.setOnClickListener {
             requestPermissions()
+        }
+
+        findViewById<Button>(R.id.btnAccessibilityTest).setOnClickListener {
+            runAccessibilityClickTest()
+        }
+
+        tapTarget.setOnClickListener {
+            tapCount++
+            tapTarget.text = "نجحت النقرة رقم $tapCount"
+        }
+
+        findViewById<Button>(R.id.btnOpenBluetoothSettings).setOnClickListener {
+            try {
+                startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+            } catch (e: Exception) {
+                toast("تعذر فتح إعدادات البلوتوث")
+            }
         }
 
         findViewById<CardView>(R.id.cardMyDevices).setOnClickListener {
@@ -65,6 +97,103 @@ class MainActivity : AppCompatActivity(), BleManager.Listener {
         }
 
         requestPermissions()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::accessibilityStatus.isInitialized) {
+            updateAccessibilityStatus()
+            updateBluetoothState()
+        }
+    }
+
+    private fun runAccessibilityClickTest() {
+        if (!isAccessibilityServiceEnabled()) {
+            accessibilityStatus.text =
+                "الخدمة غير مفعّلة. افتح إعدادات إمكانية الوصول وفعّل MUO Find."
+
+            try {
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            } catch (e: Exception) {
+                toast("تعذر فتح إعدادات إمكانية الوصول")
+            }
+            return
+        }
+
+        val service = MuoAccessibilityService.instance
+        if (service == null) {
+            accessibilityStatus.text =
+                "الخدمة مفعّلة لكن لم تتصل بعد. ارجع للتطبيق وحاول مجدداً."
+            return
+        }
+
+        if (!tapTarget.isShown || tapTarget.width == 0 || tapTarget.height == 0) {
+            accessibilityStatus.text = "زر الاختبار غير ظاهر على الشاشة."
+            return
+        }
+
+        val location = IntArray(2)
+        tapTarget.getLocationOnScreen(location)
+
+        val x = location[0] + tapTarget.width / 2f
+        val y = location[1] + tapTarget.height / 2f
+
+        accessibilityStatus.text = "جارٍ اختبار النقرة..."
+
+        service.tapAt(x, y) { completed ->
+            runOnUiThread {
+                accessibilityStatus.text =
+                    if (completed) {
+                        "أُرسلت النقرة بنجاح. تحقق من تغير نص زر التجربة."
+                    } else {
+                        "تعذر تنفيذ النقرة. أعد تفعيل الخدمة وحاول مجدداً."
+                    }
+            }
+        }
+    }
+
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        val enabledServices = Secure.getString(
+            contentResolver,
+            Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+
+        val expected = ComponentName(
+            this,
+            MuoAccessibilityService::class.java
+        ).flattenToString()
+
+        return enabledServices.split(":").any {
+            it.equals(expected, ignoreCase = true)
+        }
+    }
+
+    private fun updateAccessibilityStatus() {
+        accessibilityStatus.text = when {
+            !isAccessibilityServiceEnabled() ->
+                "خدمة النقر غير مفعّلة."
+
+            MuoAccessibilityService.instance != null ->
+                "خدمة النقر مفعّلة وجاهزة للاختبار."
+
+            else ->
+                "الخدمة مفعّلة. انتظر اتصالها أو أعد فتح التطبيق."
+        }
+    }
+
+    private fun updateBluetoothState() {
+        try {
+            val manager = getSystemService(BLUETOOTH_SERVICE) as? BluetoothManager
+            val enabled = manager?.adapter?.isEnabled == true
+
+            bluetoothState.text = if (enabled) {
+                "حالة البلوتوث: مفعّل"
+            } else {
+                "حالة البلوتوث: مغلق"
+            }
+        } catch (e: SecurityException) {
+            bluetoothState.text = "حالة البلوتوث: يلزم منح صلاحية Bluetooth"
+        }
     }
 
     private fun hasPermission(permission: String): Boolean {

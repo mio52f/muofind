@@ -24,4 +24,5 @@
     <string name="btn_grant_permissions">تفعيل الصلاحيات المطلوبة</string>
     <string name="status_ready">النظام جاهز ومُؤمّن بالكامل</string>
     <string name="status_permission_missing">يلزم تفعيل إذونات BLE والموقع للعمل</string>
+    <string name="accessibility_service_description">خدمة اختبار النقر داخل تطبيق MUO Find فقط.</string>
 </resources>
